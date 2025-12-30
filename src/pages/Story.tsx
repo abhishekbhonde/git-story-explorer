@@ -39,6 +39,51 @@ const Story = () => {
 
   const totalSlides = 8;
 
+  // Update meta tags for social sharing
+  useEffect(() => {
+    const updateMetaTags = (title: string, description: string, image: string, url: string) => {
+      document.title = title;
+      
+      // Update Open Graph tags
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      const ogDescription = document.querySelector('meta[property="og:description"]');
+      const ogImage = document.querySelector('meta[property="og:image"]');
+      const ogUrl = document.querySelector('meta[property="og:url"]');
+      
+      if (ogTitle) ogTitle.setAttribute('content', title);
+      if (ogDescription) ogDescription.setAttribute('content', description);
+      if (ogImage) ogImage.setAttribute('content', image);
+      if (ogUrl) ogUrl.setAttribute('content', url);
+      
+      // Update Twitter tags
+      const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+      const twitterDescription = document.querySelector('meta[name="twitter:description"]');
+      const twitterImage = document.querySelector('meta[name="twitter:image"]');
+      const twitterUrl = document.querySelector('meta[name="twitter:url"]');
+      
+      if (twitterTitle) twitterTitle.setAttribute('content', title);
+      if (twitterDescription) twitterDescription.setAttribute('content', description);
+      if (twitterImage) twitterImage.setAttribute('content', image);
+      if (twitterUrl) twitterUrl.setAttribute('content', url);
+    };
+
+    if (username) {
+      const currentUrl = window.location.href;
+      const baseUrl = window.location.origin;
+      const title = `@${username}'s GitHub Story 2025 - GitStory`;
+      const description = `Check out @${username}'s GitHub story for 2025! See their commits, contributions, and coding journey.`;
+      const image = `${baseUrl}/og-image.svg`;
+      updateMetaTags(title, description, image, currentUrl);
+    } else {
+      const baseUrl = window.location.origin;
+      const defaultTitle = 'GitStory 2025 - Your Year in Code';
+      const defaultDescription = 'Discover your GitHub story for 2025. See your commits, contributions, and coding journey visualized in a beautiful, cinematic experience.';
+      const defaultImage = `${baseUrl}/og-image.svg`;
+      const defaultUrl = baseUrl;
+      updateMetaTags(defaultTitle, defaultDescription, defaultImage, defaultUrl);
+    }
+  }, [username]);
+
   useEffect(() => {
     const loadData = async () => {
       if (!username) return;
@@ -56,6 +101,34 @@ const Story = () => {
         const stats = calculateStats(user, repos, events);
         
         setData({ user, repos, stats });
+        
+        // Update meta tags with user-specific data
+        const currentUrl = window.location.href;
+        const title = `@${user.login}'s GitHub Story 2025 - GitStory`;
+        const description = `Check out @${user.login}'s GitHub story! ${stats.totalCommits} commits, ${stats.topLanguages[0]?.language || 'Code'} developer, ${stats.archetype}.`;
+        const image = `${window.location.origin}/og-image.svg`;
+        
+        const ogTitle = document.querySelector('meta[property="og:title"]');
+        const ogDescription = document.querySelector('meta[property="og:description"]');
+        const ogImage = document.querySelector('meta[property="og:image"]');
+        const ogUrl = document.querySelector('meta[property="og:url"]');
+        
+        if (ogTitle) ogTitle.setAttribute('content', title);
+        if (ogDescription) ogDescription.setAttribute('content', description);
+        if (ogImage) ogImage.setAttribute('content', image);
+        if (ogUrl) ogUrl.setAttribute('content', currentUrl);
+        
+        const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+        const twitterDescription = document.querySelector('meta[name="twitter:description"]');
+        const twitterImage = document.querySelector('meta[name="twitter:image"]');
+        const twitterUrl = document.querySelector('meta[name="twitter:url"]');
+        
+        if (twitterTitle) twitterTitle.setAttribute('content', title);
+        if (twitterDescription) twitterDescription.setAttribute('content', description);
+        if (twitterImage) twitterImage.setAttribute('content', image);
+        if (twitterUrl) twitterUrl.setAttribute('content', currentUrl);
+        
+        document.title = title;
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load data');
         toast.error('Failed to load GitHub data');
