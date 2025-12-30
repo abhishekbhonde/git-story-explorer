@@ -142,7 +142,7 @@ const Story = () => {
   const slides = [
     <IntroSlide key="intro" />,
     <ProfileSlide key="profile" user={user} yearsOnGitHub={stats.yearsOnGitHub} />,
-    <StatsSlide key="stats" user={user} totalStars={stats.totalStars} totalCommits={stats.totalCommits} totalPRs={stats.totalPRs} />,
+    <StatsSlide key="stats" user={user} totalStars={stats.totalStars} totalCommits={stats.totalCommits} totalPRs={stats.totalPRs} totalEvents={stats.totalEvents} />,
     <LanguagesSlide key="languages" topLanguages={stats.topLanguages} />,
     <FavoriteDaySlide key="favoriteDay" favoriteDay={stats.favoriteDay} dayCount={stats.dayCount} />,
     <ArchetypeSlide key="archetype" archetype={stats.archetype} peakHour={stats.peakHour} />,
