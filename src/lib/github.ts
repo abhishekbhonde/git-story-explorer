@@ -41,6 +41,8 @@ export interface GitHubEvent {
   payload: {
     commits?: { message: string }[];
     action?: string;
+    size?: number;
+    distinct_size?: number;
   };
 }
 
@@ -69,10 +71,13 @@ export async function fetchGitHubEvents(username: string): Promise<GitHubEvent[]
 }
 
 export function calculateStats(user: GitHubUser, repos: GitHubRepo[], events: GitHubEvent[]) {
-  // Calculate total stars
+  // Calculate total stars from repos
   const totalStars = repos.reduce((sum, repo) => sum + repo.stargazers_count, 0);
   
-  // Calculate language distribution
+  // Calculate total forks
+  const totalForks = repos.reduce((sum, repo) => sum + repo.forks_count, 0);
+  
+  // Calculate language distribution from repos
   const languageCount: Record<string, number> = {};
   repos.forEach(repo => {
     if (repo.language) {
@@ -80,13 +85,14 @@ export function calculateStats(user: GitHubUser, repos: GitHubRepo[], events: Gi
     }
   });
   
+  const totalWithLanguage = repos.filter(r => r.language).length || 1;
   const topLanguages = Object.entries(languageCount)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
     .map(([lang, count]) => ({ 
       language: lang, 
       count, 
-      percentage: Math.round((count / repos.length) * 100) 
+      percentage: Math.round((count / totalWithLanguage) * 100) 
     }));
   
   // Get top repos by stars
@@ -94,17 +100,34 @@ export function calculateStats(user: GitHubUser, repos: GitHubRepo[], events: Gi
     .sort((a, b) => b.stargazers_count - a.stargazers_count)
     .slice(0, 5);
   
-  // Count commits from push events
+  // Count commits from PushEvents - use size or distinct_size field
   const pushEvents = events.filter(e => e.type === 'PushEvent');
-  const totalCommits = pushEvents.reduce((sum, event) => 
-    sum + (event.payload.commits?.length || 0), 0
-  );
+  let totalCommits = 0;
+  pushEvents.forEach(event => {
+    // payload.size = number of commits in the push
+    // payload.distinct_size = number of distinct commits
+    // payload.commits = array of commits (may not always be present)
+    if (event.payload.commits && event.payload.commits.length > 0) {
+      totalCommits += event.payload.commits.length;
+    } else if (event.payload.size) {
+      totalCommits += event.payload.size;
+    } else if (event.payload.distinct_size) {
+      totalCommits += event.payload.distinct_size;
+    } else {
+      // Each push event is at least 1 commit
+      totalCommits += 1;
+    }
+  });
   
-  // Count PRs
+  // Count PRs (PullRequestEvent)
   const prEvents = events.filter(e => e.type === 'PullRequestEvent');
   const totalPRs = prEvents.length;
   
-  // Analyze activity by day
+  // Count issues opened
+  const issueEvents = events.filter(e => e.type === 'IssuesEvent' && e.payload.action === 'opened');
+  const totalIssues = issueEvents.length;
+  
+  // Analyze activity by day of week
   const dayCount: Record<string, number> = {
     'Sunday': 0, 'Monday': 0, 'Tuesday': 0, 'Wednesday': 0, 
     'Thursday': 0, 'Friday': 0, 'Saturday': 0
@@ -116,8 +139,9 @@ export function calculateStats(user: GitHubUser, repos: GitHubRepo[], events: Gi
     dayCount[days[day]]++;
   });
   
-  const favoriteDay = Object.entries(dayCount)
-    .sort((a, b) => b[1] - a[1])[0]?.[0] || 'Monday';
+  // Find favorite day (most active)
+  const sortedDays = Object.entries(dayCount).sort((a, b) => b[1] - a[1]);
+  const favoriteDay = sortedDays[0]?.[1] > 0 ? sortedDays[0][0] : 'Monday';
   
   // Analyze activity by hour
   const hourCount: Record<number, number> = {};
@@ -126,30 +150,47 @@ export function calculateStats(user: GitHubUser, repos: GitHubRepo[], events: Gi
     hourCount[hour] = (hourCount[hour] || 0) + 1;
   });
   
-  const peakHour = Object.entries(hourCount)
-    .sort((a, b) => b[1] - a[1])[0]?.[0] || '12';
+  // Find peak hour
+  const sortedHours = Object.entries(hourCount).sort((a, b) => b[1] - a[1]);
+  const peakHour = sortedHours[0] ? parseInt(sortedHours[0][0]) : 12;
   
-  // Determine developer archetype
-  const hour = parseInt(peakHour);
+  // Determine developer archetype based on peak hour
   let archetype = 'The Steady Coder';
-  if (hour >= 22 || hour < 5) archetype = 'The Night Owl';
-  else if (hour >= 5 && hour < 9) archetype = 'The Early Bird';
-  else if (hour >= 9 && hour < 17) archetype = 'The 9-to-5 Pro';
-  else if (hour >= 17 && hour < 22) archetype = 'The Evening Hacker';
+  if (peakHour >= 22 || peakHour < 5) archetype = 'The Night Owl';
+  else if (peakHour >= 5 && peakHour < 9) archetype = 'The Early Bird';
+  else if (peakHour >= 9 && peakHour < 17) archetype = 'The 9-to-5 Pro';
+  else if (peakHour >= 17 && peakHour < 22) archetype = 'The Evening Hacker';
   
-  // Years on GitHub
+  // Calculate years on GitHub
   const yearsOnGitHub = new Date().getFullYear() - new Date(user.created_at).getFullYear();
+  
+  // Count total events by type for debugging
+  const eventTypeCounts: Record<string, number> = {};
+  events.forEach(event => {
+    eventTypeCounts[event.type] = (eventTypeCounts[event.type] || 0) + 1;
+  });
+  
+  console.log('GitHub Stats Debug:', {
+    totalEvents: events.length,
+    pushEvents: pushEvents.length,
+    eventTypeCounts,
+    totalCommits,
+    totalPRs
+  });
   
   return {
     totalStars,
+    totalForks,
     totalCommits,
     totalPRs,
+    totalIssues,
     topLanguages,
     topRepos,
     favoriteDay,
-    peakHour: parseInt(peakHour),
+    peakHour,
     archetype,
     dayCount,
-    yearsOnGitHub
+    yearsOnGitHub,
+    totalEvents: events.length
   };
 }

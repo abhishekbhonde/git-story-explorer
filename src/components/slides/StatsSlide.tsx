@@ -1,20 +1,21 @@
 import { motion } from "framer-motion";
 import { GitHubUser } from "@/lib/github";
-import { GitBranch, GitPullRequest, Star, Users } from "lucide-react";
+import { GitBranch, GitPullRequest, Star, Users, GitCommit, Activity } from "lucide-react";
 
 interface StatsSlideProps {
   user: GitHubUser;
   totalStars: number;
   totalCommits: number;
   totalPRs: number;
+  totalEvents: number;
 }
 
-const StatsSlide = ({ user, totalStars, totalCommits, totalPRs }: StatsSlideProps) => {
+const StatsSlide = ({ user, totalStars, totalCommits, totalPRs, totalEvents }: StatsSlideProps) => {
   const stats = [
-    { label: "Repositories", value: user.public_repos, icon: GitBranch, color: "from-github-blue to-github-blue/50" },
+    { label: "Public Repos", value: user.public_repos, icon: GitBranch, color: "from-github-blue to-github-blue/50" },
     { label: "Followers", value: user.followers, icon: Users, color: "from-github-pink to-github-pink/50" },
     { label: "Stars Earned", value: totalStars, icon: Star, color: "from-github-gold to-github-gold/50" },
-    { label: "Pull Requests", value: totalPRs, icon: GitPullRequest, color: "from-github-purple to-github-purple/50" },
+    { label: "Following", value: user.following, icon: Users, color: "from-github-purple to-github-purple/50" },
   ];
 
   return (
@@ -80,19 +81,46 @@ const StatsSlide = ({ user, totalStars, totalCommits, totalPRs }: StatsSlideProp
           ))}
         </div>
 
-        {/* Commits highlight */}
+        {/* Activity stats from events API */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="mt-8 inline-flex items-center gap-4 bg-gradient-to-r from-github-green/20 via-github-green/10 to-transparent border border-github-green/30 rounded-full px-6 py-3"
+          className="mt-8 flex flex-wrap justify-center gap-4"
         >
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-github-green animate-pulse" />
-            <span className="text-github-green font-bold text-2xl">{totalCommits}+</span>
+          <div className="flex items-center gap-3 bg-gradient-to-r from-github-green/20 via-github-green/10 to-transparent border border-github-green/30 rounded-full px-5 py-3">
+            <GitCommit className="w-5 h-5 text-github-green" />
+            <div className="text-left">
+              <span className="text-github-green font-bold text-xl">{totalCommits}</span>
+              <span className="text-muted-foreground text-sm ml-2">recent commits</span>
+            </div>
           </div>
-          <span className="text-muted-foreground">commits this year</span>
+          
+          <div className="flex items-center gap-3 bg-gradient-to-r from-github-purple/20 via-github-purple/10 to-transparent border border-github-purple/30 rounded-full px-5 py-3">
+            <GitPullRequest className="w-5 h-5 text-github-purple" />
+            <div className="text-left">
+              <span className="text-github-purple font-bold text-xl">{totalPRs}</span>
+              <span className="text-muted-foreground text-sm ml-2">pull requests</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 rounded-full px-5 py-3">
+            <Activity className="w-5 h-5 text-primary" />
+            <div className="text-left">
+              <span className="text-primary font-bold text-xl">{totalEvents}</span>
+              <span className="text-muted-foreground text-sm ml-2">events tracked</span>
+            </div>
+          </div>
         </motion.div>
+        
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="text-muted-foreground/50 text-xs mt-6"
+        >
+          * Activity data from last 90 days (GitHub API limit)
+        </motion.p>
       </motion.div>
     </div>
   );

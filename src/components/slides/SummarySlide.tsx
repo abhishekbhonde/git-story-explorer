@@ -71,11 +71,23 @@ const SummarySlide = ({ user, totalCommits, topLanguage, topRepo, archetype }: S
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <p className="text-muted-foreground text-xs uppercase tracking-[0.2em] mb-1">COMMITS</p>
-                  <p className="text-display-italic text-4xl text-foreground font-bold">{totalCommits}+</p>
+                  <p className="text-display-italic text-3xl text-foreground font-bold">{totalCommits}</p>
+                  <p className="text-muted-foreground/50 text-xs">last 90 days</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs uppercase tracking-[0.2em] mb-1">TOP LANG</p>
-                  <p className="text-display-italic text-4xl text-foreground font-bold">{topLanguage}</p>
+                  <p className="text-display-italic text-3xl text-foreground font-bold">{topLanguage || 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <p className="text-muted-foreground text-xs uppercase tracking-[0.2em] mb-1">REPOS</p>
+                  <p className="text-display-italic text-3xl text-foreground font-bold">{user.public_repos}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs uppercase tracking-[0.2em] mb-1">FOLLOWERS</p>
+                  <p className="text-display-italic text-3xl text-foreground font-bold">{user.followers}</p>
                 </div>
               </div>
               
@@ -86,13 +98,13 @@ const SummarySlide = ({ user, totalCommits, topLanguage, topRepo, archetype }: S
                 </div>
               )}
               
-              <div className="border-t border-border/50 pt-6 flex items-center justify-between">
+              <div className="border-t border-border/50 pt-4 flex items-center justify-between">
                 <div className="flex gap-[3px]">
                   {Array.from({ length: 20 }).map((_, i) => (
                     <motion.div
                       key={i}
                       initial={{ height: 4 }}
-                      animate={{ height: 4 + Math.random() * 20 }}
+                      animate={{ height: 4 + Math.sin(i * 0.5) * 10 + 6 }}
                       transition={{ delay: 0.5 + i * 0.02 }}
                       className="w-[2px] bg-muted-foreground/40 rounded-full"
                     />
