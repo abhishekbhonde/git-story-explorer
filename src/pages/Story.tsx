@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Home } from "lucide-react";
+import { ChevronLeft, ChevronRight, Home, Star } from "lucide-react";
 import GitHubLogo from "@/components/GitHubLogo";
 import { 
   fetchGitHubUser, 
@@ -159,16 +159,91 @@ const Story = () => {
 
   return (
     <div className="h-screen bg-background overflow-hidden relative">
+      {/* Made by Abhishek Bhonde Tag - Top left, below progress bar */}
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.3 }}
+        data-made-by-tag
+        className="absolute top-20 left-6 z-50"
+        onClick={() => window.open('https://github.com/abhishekbhonde/git-story-explorer', '_blank')}
+      >
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="relative flex items-center gap-2 bg-card/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg cursor-pointer"
+        >
+          {/* Animated pulsing border */}
+          <motion.div
+            animate={{
+              opacity: [0.3, 0.8, 0.3],
+              scale: [1, 1.02, 1],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+            className="absolute inset-0 rounded-full border-2 border-primary/40"
+          />
+          
+          {/* Moving gradient border effect */}
+          <motion.div
+            animate={{
+              backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: 'linear',
+            }}
+            className="absolute inset-0 rounded-full opacity-60"
+            style={{
+              background: 'linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)',
+              backgroundSize: '200% 100%',
+              padding: '2px',
+              WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+              WebkitMaskComposite: 'xor',
+              mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+              maskComposite: 'exclude',
+            }}
+          />
+          
+          {/* Content */}
+          <div className="relative flex items-center gap-2">
+            <motion.div
+              animate={{
+                scale: [1, 1.2, 1],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            >
+              <Star className="w-4 h-4 text-primary fill-primary" />
+            </motion.div>
+            
+            <div className="flex flex-col leading-tight">
+              <span className="text-xs font-semibold text-foreground">Star on GitHub</span>
+              <span className="text-[10px] text-muted-foreground">Made by abhishekbhonde</span>
+            </div>
+            
+            <GitHubLogo className="w-4 h-4 text-foreground opacity-80" />
+          </div>
+        </motion.div>
+      </motion.div>
+
       {/* Progress bar */}
-      <div className="absolute top-0 left-0 right-0 z-50 flex gap-1 p-4">
+      <div className="absolute top-0 left-0 right-0 z-50 flex gap-1.5 p-4" data-progress-bar>
         {Array.from({ length: totalSlides }).map((_, i) => (
           <div
             key={i}
-            className="flex-1 h-1 rounded-full overflow-hidden bg-muted cursor-pointer"
+            className="flex-1 h-1.5 rounded-full overflow-hidden bg-muted/50 cursor-pointer hover:bg-muted transition-colors backdrop-blur-sm"
             onClick={() => setCurrentSlide(i)}
           >
             <motion.div
-              className="h-full bg-foreground"
+              className="h-full bg-gradient-to-r from-primary to-github-purple rounded-full"
               initial={{ width: 0 }}
               animate={{ width: i < currentSlide ? '100%' : i === currentSlide ? '100%' : '0%' }}
               transition={{ duration: 0.3 }}
@@ -177,13 +252,16 @@ const Story = () => {
         ))}
       </div>
 
-      {/* Home button */}
-      <button
+      {/* Home button - Same line as Made by tag */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
         onClick={() => navigate('/')}
-        className="absolute top-6 right-6 z-50 p-2 rounded-full bg-card/80 backdrop-blur border border-border hover:bg-card transition-colors"
+        className="absolute top-20 right-6 z-50 p-2 rounded-full bg-card/80 backdrop-blur-sm border border-border hover:bg-card transition-all shadow-lg hover:shadow-xl"
+        data-home-button
       >
         <Home className="w-5 h-5 text-muted-foreground" />
-      </button>
+      </motion.button>
 
       {/* Slides container */}
       <AnimatePresence mode="wait">
@@ -193,23 +271,24 @@ const Story = () => {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -50 }}
           transition={{ duration: 0.3 }}
-          className="h-full pt-12"
+          className="h-full pt-12 pb-24"
         >
           {slides[currentSlide]}
         </motion.div>
       </AnimatePresence>
 
       {/* Navigation buttons */}
-      <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-4 z-50">
+      <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-4 z-50 px-4">
         <motion.button
-          whileHover={{ scale: 1.05 }}
+          whileHover={{ scale: 1.05, x: -2 }}
           whileTap={{ scale: 0.95 }}
           onClick={prevSlide}
           disabled={currentSlide === 0}
-          className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all ${
+          data-nav-button
+          className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all backdrop-blur-sm border ${
             currentSlide === 0
-              ? 'bg-muted text-muted-foreground cursor-not-allowed'
-              : 'bg-secondary hover:bg-secondary/80 text-foreground'
+              ? 'bg-muted/50 text-muted-foreground cursor-not-allowed border-border/50'
+              : 'bg-card/80 hover:bg-card text-foreground border-border shadow-lg hover:shadow-xl'
           }`}
         >
           <ChevronLeft className="w-5 h-5" />
@@ -217,14 +296,15 @@ const Story = () => {
         </motion.button>
         
         <motion.button
-          whileHover={{ scale: 1.05 }}
+          whileHover={{ scale: 1.05, x: 2 }}
           whileTap={{ scale: 0.95 }}
           onClick={nextSlide}
           disabled={currentSlide === totalSlides - 1}
-          className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all ${
+          data-nav-button
+          className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all backdrop-blur-sm border ${
             currentSlide === totalSlides - 1
-              ? 'bg-muted text-muted-foreground cursor-not-allowed'
-              : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+              ? 'bg-muted/50 text-muted-foreground cursor-not-allowed border-border/50'
+              : 'bg-primary/90 hover:bg-primary text-primary-foreground border-primary/20 shadow-lg hover:shadow-xl shadow-primary/20'
           }`}
         >
           Next
@@ -233,7 +313,7 @@ const Story = () => {
       </div>
 
       {/* Slide counter */}
-      <div className="absolute bottom-8 right-8 text-muted-foreground text-sm font-mono z-50">
+      <div className="absolute bottom-6 right-6 text-muted-foreground text-sm font-mono z-50 bg-card/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border/50 shadow-lg" data-slide-counter>
         {currentSlide + 1} / {totalSlides}
       </div>
     </div>

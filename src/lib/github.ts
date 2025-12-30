@@ -100,27 +100,33 @@ export function calculateStats(user: GitHubUser, repos: GitHubRepo[], events: Gi
     .sort((a, b) => b.stargazers_count - a.stargazers_count)
     .slice(0, 5);
   
-  // Count commits from PushEvents - use size or distinct_size field
+  // Count commits from PushEvents
+  // Priority: payload.size (total commits) > payload.commits.length > payload.distinct_size > 1
   const pushEvents = events.filter(e => e.type === 'PushEvent');
   let totalCommits = 0;
   pushEvents.forEach(event => {
-    // payload.size = number of commits in the push
-    // payload.distinct_size = number of distinct commits
-    // payload.commits = array of commits (may not always be present)
-    if (event.payload.commits && event.payload.commits.length > 0) {
-      totalCommits += event.payload.commits.length;
-    } else if (event.payload.size) {
+    // payload.size = total number of commits in the push (most reliable)
+    // payload.commits = array of commits (may be truncated)
+    // payload.distinct_size = number of distinct commits (excludes duplicates)
+    if (event.payload.size !== undefined && event.payload.size !== null) {
       totalCommits += event.payload.size;
-    } else if (event.payload.distinct_size) {
+    } else if (event.payload.commits && event.payload.commits.length > 0) {
+      totalCommits += event.payload.commits.length;
+    } else if (event.payload.distinct_size !== undefined && event.payload.distinct_size !== null) {
       totalCommits += event.payload.distinct_size;
     } else {
-      // Each push event is at least 1 commit
+      // Fallback: each push event is at least 1 commit
       totalCommits += 1;
     }
   });
   
-  // Count PRs (PullRequestEvent)
-  const prEvents = events.filter(e => e.type === 'PullRequestEvent');
+  // Count PRs - only count opened, merged, or reopened PRs (not closed/synchronize)
+  const prEvents = events.filter(e => {
+    if (e.type !== 'PullRequestEvent') return false;
+    const action = e.payload.action;
+    // Count opened, closed (merged), reopened, but not synchronize
+    return action === 'opened' || action === 'closed' || action === 'reopened';
+  });
   const totalPRs = prEvents.length;
   
   // Count issues opened
