@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import GitHubLogo from "@/components/GitHubLogo";
 import UsernameInput from "@/components/UsernameInput";
 import { useNavigate } from "react-router-dom";
+import { fetchGitHubUser } from "@/lib/github";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -12,11 +13,14 @@ const Index = () => {
   const handleSubmit = async (username: string) => {
     setIsLoading(true);
     
-    // Simulate API check (in real app, would validate username exists)
-    setTimeout(() => {
-      toast.success(`Loading story for @${username}...`);
+    try {
+      // Validate user exists
+      await fetchGitHubUser(username);
       navigate(`/story/${username}`);
-    }, 1500);
+    } catch (error) {
+      toast.error(`User @${username} not found on GitHub`);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -34,6 +38,12 @@ const Index = () => {
           animate={{ opacity: 0.5 }}
           transition={{ duration: 2, delay: 0.5 }}
           className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-github-blue/5 rounded-full blur-3xl"
+        />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.3 }}
+          transition={{ duration: 2, delay: 1 }}
+          className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-github-green/5 rounded-full blur-3xl"
         />
       </div>
 

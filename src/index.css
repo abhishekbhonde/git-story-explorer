@@ -141,40 +141,39 @@
 
 @layer utilities {
   @keyframes float {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
   }
 
   @keyframes pulse-slow {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.7;
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
   }
 
   @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   @keyframes slide-up {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
+
+  /* GitHub color utilities */
+  .bg-github-blue { background-color: hsl(var(--github-blue)); }
+  .bg-github-green { background-color: hsl(var(--github-green)); }
+  .bg-github-gold { background-color: hsl(var(--github-gold)); }
+  .bg-github-pink { background-color: hsl(var(--github-pink)); }
+  .bg-github-purple { background-color: hsl(var(--github-purple)); }
+  
+  .text-github-blue { color: hsl(var(--github-blue)); }
+  .text-github-green { color: hsl(var(--github-green)); }
+  .text-github-gold { color: hsl(var(--github-gold)); }
+  .text-github-pink { color: hsl(var(--github-pink)); }
+  .text-github-purple { color: hsl(var(--github-purple)); }
+  
+  .fill-github-gold { fill: hsl(var(--github-gold)); }
+  
+  .border-github-gold { border-color: hsl(var(--github-gold)); }
 }
